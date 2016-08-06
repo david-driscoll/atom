@@ -5,18 +5,20 @@ const path = require('path')
 const syncRequest = require('sync-request')
 
 module.exports = function (packagedAppPath) {
-  if (process.platform === 'darwin') {
+  if (process.platform !== 'darwin') throw new Error()
+
+  {
     if (!process.env.ATOM_MAC_CODE_SIGNING_CERT_DOWNLOAD_URL) {
       console.log('Skipping code signing because the ATOM_MAC_CODE_SIGNING_CERT_DOWNLOAD_URL environment variable is not defined'.gray)
       return
     }
 
-    const certPath = path.join(os.tmpdir(), 'mac.p12')
-    downloadCertificate(process.env.ATOM_MAC_CODE_SIGNING_CERT_DOWNLOAD_URL, certPath)
 
     try {
-      console.log(`Unlocking keychain ${process.env.ATOM_MAC_CODE_SIGNING_KEYCHAIN}`)
+      const certPath = path.join(os.tmpdir(), 'mac.p12')
+      downloadCertificate(process.env.ATOM_MAC_CODE_SIGNING_CERT_DOWNLOAD_URL, certPath)
 
+      console.log(`Unlocking keychain ${process.env.ATOM_MAC_CODE_SIGNING_KEYCHAIN}`)
       const unlockArgs = ['unlock-keychain', process.env.ATOM_MAC_CODE_SIGNING_KEYCHAIN]
       // For signing on local workstations, password could be entered interactively
       if (process.env.ATOM_MAC_CODE_SIGNING_KEYCHAIN_PASSWORD) {
@@ -43,6 +45,22 @@ module.exports = function (packagedAppPath) {
       fs.removeSync(certPath)
     }
   } else if (process.platform === 'win32') {
+    if (!process.env.ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL) {
+      console.log('Skipping code signing because the ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL environment variable is not defined'.gray)
+      return
+    }
+
+    try {
+      const certPath = path.join(os.tmpdir(), 'win.p12')
+      downloadCertificate(process.env.ATOM_WIN_CODE_SIGNING_CERT_DOWNLOAD_URL, certPath)
+
+
+    } finally {
+      console.log(`Deleting certificate at ${certPath}`);
+      fs.removeSync(certPath)
+    }
+
+
     const signtoolPath = path.join('C:', 'Program Files (x86)', 'Microsoft SDKs', 'Windows', 'v7.1A', 'bin', 'signtool.exe')
 
     const binToSignPath = path.join(packagedAppPath, 'atom.exe')
