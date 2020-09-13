@@ -35,7 +35,7 @@
     "minidump": "~0.9",
     "npm": "3.10.5",
     "rcedit": "~0.3.0",
-    "request": "~2.27.0",
+    "request": "~2.88.2",
     "rimraf": "~2.2.2",
     "runas": "^3.1",
     "standard": "^5.4.1",
